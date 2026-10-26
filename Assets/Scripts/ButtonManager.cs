@@ -78,18 +78,39 @@ public class ButtonManager : MonoBehaviour
 
         if (Day == 1)
         {
-            player.transform.position = house1.transform.position + offset1;
+            SpawnPlayer(house1.transform.position + offset1);
         }
         else if (Day == 2)
         {
-            player.transform.position = house2.transform.position + offset2;
+            SpawnPlayer(house2.transform.position + offset2);
         }
         else if (Day == 3)
         {
-            player.transform.position = house3.transform.position + offset3;
+            SpawnPlayer(house3.transform.position + offset3);
         }
 
         StartCoroutine(ShowObjective());
+    }
+
+    void SpawnPlayer(Vector3 spawn)
+    {
+        // some house spots are below the terrain surface, which can drop the player through the map,
+        // so lift the spawn onto the ground of whichever terrain tile it is on
+        foreach (Terrain terrain in Terrain.activeTerrains)
+        {
+            Vector3 local = spawn - terrain.transform.position;
+            Vector3 size = terrain.terrainData.size;
+            if (local.x >= 0 && local.z >= 0 && local.x <= size.x && local.z <= size.z)
+            {
+                float groundY = terrain.SampleHeight(spawn) + terrain.transform.position.y;
+                spawn.y = Mathf.Max(spawn.y, groundY + 0.1f);
+            }
+        }
+
+        player.transform.position = spawn;
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+        rb.position = spawn;
+        rb.linearVelocity = Vector3.zero;
     }
 
     IEnumerator ShowObjective()
@@ -131,21 +152,31 @@ public class ButtonManager : MonoBehaviour
    public void ClickNext()
 {
     sfx.OpenBook();
-    healthclass.isWrong();
-    int poisonAmount = inventory.ReturnPoisoned();
+    bool enoughMushrooms = inventory.HasRequiredIngredients();
+    bool atePoison = inventory.ReturnPoisoned() > 0;
+    healthclass.DailyReview(enoughMushrooms, atePoison);
 
-    Debug.Log(poisonAmount);
-
-    if (poisonAmount > 0)
+    TextMeshProUGUI tmpComponent = hometext.GetComponent<TextMeshProUGUI>();
+    if (!enoughMushrooms)
     {
-        TextMeshProUGUI tmpComponent = hometext.GetComponent<TextMeshProUGUI>();
-        tmpComponent.text = "You've Been Poisoned! Your time will be shorted by 1 minute the next day";
-        healthclass.isPoisoned();
+        tmpComponent.text = "You didn't collect enough mushrooms! You lost 2 hearts.";
+        if (atePoison)
+        {
+            tmpComponent.text += "\nYou were also poisoned! Your time will be shortened by 1 minute the next day.";
+        }
+    }
+    else if (atePoison)
+    {
+        tmpComponent.text = "You've Been Poisoned! You lost 1 heart, and your time will be shortened by 1 minute the next day.";
     }
     else
     {
-        TextMeshProUGUI tmpComponent = hometext.GetComponent<TextMeshProUGUI>();
-        tmpComponent.text = "You were not poisoned!";
+        tmpComponent.text = "You collected enough mushrooms and were not poisoned!";
+    }
+
+    if (Health.currentHealth <= 0)
+    {
+        tmpComponent.text += "\nYou have no hearts left...";
     }
 
     inventory.ResetInventory();
@@ -156,7 +187,8 @@ public class ButtonManager : MonoBehaviour
 
     public void ClickNextDay()
     {
-        if (Health.currentHealth == 0)
+        // health can drop below 0 (poison and a failed day each cost 2), so treat anything at or below 0 as dead
+        if (Health.currentHealth <= 0)
         {
             SceneManager.LoadScene("End");
             return;

@@ -26,14 +26,16 @@ public class SceneTransition : MonoBehaviour
     public void TransitionScene(string transitionType)
     {
         Index = 0;
+        TransitionScreen.enabled = true;
+        // bounds are fractions of the screen height (0 = covering, 1 = fully hidden above)
         if (transitionType == "In")
         {
             LowerBound = 0f;
-            UpperBound = 1080f;
+            UpperBound = 1f;
         }
         else
         {
-            LowerBound = 1080f;
+            LowerBound = 1f;
             UpperBound = 0f;
         }
         StartCoroutine("Transition");
@@ -44,7 +46,9 @@ public class SceneTransition : MonoBehaviour
         if (Incriments >= Index)
         {
             RectTransform rectTransform = TransitionScreen.GetComponent<RectTransform>();
-            float yPos = Mathf.Lerp(LowerBound, UpperBound, Index / Incriments);
+            // read the height every step, the screen size can change (fullscreen, window resize)
+            float screenHeight = ((RectTransform)rectTransform.parent).rect.height;
+            float yPos = Mathf.Lerp(LowerBound, UpperBound, Index / Incriments) * screenHeight;
             Vector2 currentPos = rectTransform.anchoredPosition;
             rectTransform.anchoredPosition = new Vector2(currentPos.x, yPos);
             yield return new WaitForSeconds(Duration / Incriments);
@@ -52,6 +56,9 @@ public class SceneTransition : MonoBehaviour
         }
         else
         {
+            // once slid away, turn the screen off so it can never peek in at a different resolution
+            if (UpperBound > LowerBound)
+                TransitionScreen.enabled = false;
             yield return new WaitForSeconds(0);
         }
         Index++;

@@ -20,7 +20,7 @@ public class DailyEffects : MonoBehaviour
 
     public void Shrink()
     {
-        Timer.timeInSeconds = Timer.timeInSeconds - 60;
+        Timer.penaltySeconds += 60;
     }
     public void Enlargen()
     {

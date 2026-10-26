@@ -5,6 +5,7 @@ using System.Collections;
 public class ScenePreloader : MonoBehaviour
 {
     private AsyncOperation asyncLoad;
+    private bool startRequested = false;
 
     public bool IsReady { get; private set; }
 
@@ -32,6 +33,9 @@ public class ScenePreloader : MonoBehaviour
         IsReady = true;
 
         Debug.Log("Scene 0 (36) is fully preloaded and ready!");
+
+        if (startRequested)
+            asyncLoad.allowSceneActivation = true;
     }
 
     public void ActivatePreloadedScene()
@@ -42,7 +46,8 @@ public class ScenePreloader : MonoBehaviour
         }
         else
         {
-            Debug.Log("Scene is not finished preloading yet!");
+            startRequested = true;
+            Debug.Log("Scene is not finished preloading yet, it will start when ready");
         }
     }
 }

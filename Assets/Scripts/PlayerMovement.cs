@@ -9,7 +9,7 @@ public class PlayerMovement : MonoBehaviour
     private float movementX;
     private float movementY;
 
-    public static float moveSpeed = 100;
+    public static float moveSpeed = 120;
     public float jumpForce = 13;
     public bool jreq;
     public float gravity;
@@ -27,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>(); // Gets the Animator
 
-        moveSpeed = 10;
+        moveSpeed = 15;
         jreq = false;
         rb.useGravity = false;
         gravity = -50;

@@ -7,6 +7,7 @@ public class Timer : MonoBehaviour
 {
     public static float startingTime = 240f;
     public static float timeInSeconds;
+    public static float penaltySeconds;
 
     public GameObject homeback;
     public GameObject damper;
@@ -23,6 +24,14 @@ public class Timer : MonoBehaviour
 
     void Update()
     {
+        // time taken off by a daily effect (e.g. being poisoned the day before). Applied here rather than
+        // in the effect itself so Start can't overwrite it, whichever script starts first.
+        if (penaltySeconds > 0)
+        {
+            timeInSeconds -= penaltySeconds;
+            penaltySeconds = 0;
+        }
+
         timeInSeconds -= Time.deltaTime;
 
         if (timeInSeconds < 0)
@@ -36,7 +45,7 @@ public class Timer : MonoBehaviour
 
         if (timeInSeconds <= 0)
         {
-            Health.currentHealth--;
+            // no extra penalty here: the day review decides hearts lost, same as submitting
             timesup.SetActive(true);
             StartCoroutine(WaitFiveSeconds());
             enabled = false;
@@ -54,8 +63,9 @@ public class Timer : MonoBehaviour
 
         player.transform.position = new Vector3(29, 476, 147);
         timesup.SetActive(false);
-        homeback.SetActive(true);
-        damper.SetActive(true);
+
+        // open the day review the same way the Submit button does, so the collected list is filled in
+        FindAnyObjectByType<ButtonManager>().ClickSubmit();
     }
 
     public static void ReduceRoundTime()
