@@ -36,6 +36,26 @@ public class MushInst : MonoBehaviour
     }
 
     // Update is called once per frame
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && InteractButton.activeSelf)
+        {
+            InteractBook();
+        }
+        if (Input.GetKeyDown(KeyCode.E) && CollectButton.activeSelf)
+        {
+            PhysicalCollect();
+        }
+        if (Input.GetKeyDown(KeyCode.E) && CollectButton.activeSelf)
+        {
+            PhysicalCollect();
+        }
+        if (Input.GetKeyDown(KeyCode.E) && InspectButton.activeSelf)
+        {
+            MakeMush();
+        }
+    }
     public GameObject getMushroom()
     {
         return PlayerMovement.currentmush;
