@@ -57,6 +57,23 @@ public class Inventory : MonoBehaviour
     }
 
 
+    // total of one mushroom type, safe and poisonous together, for display
+    public int returnNumberofType(string mushroomName)
+    {
+        int total = 0;
+
+        foreach (InventoryItem item in items)
+        {
+            if (item.data.mushroomName == mushroomName)
+            {
+                total += item.numberof;
+            }
+        }
+
+        return total;
+    }
+
+
     public void CheckPoison()
     {
         poisoned = 0;
@@ -117,42 +134,42 @@ public class Inventory : MonoBehaviour
             return display;
         }
 
+        List<string> shown = new List<string>();
+
         foreach (InventoryItem item in items)
         {
-            display += item.data.mushroomName + " x" + item.numberof + "\n";
+            if (shown.Contains(item.data.mushroomName))
+                continue;
+
+            shown.Add(item.data.mushroomName);
+            display += item.data.mushroomName + " x" + returnNumberofType(item.data.mushroomName) + "\n";
         }
 
         return display;
     }
 
+    // goals count every mushroom of the type, poisonous or not;
+    // poison is judged separately in the daily review
     public bool HasRequiredIngredients()
     {
-        // Goal 1
-        goal1Met = returnNumberof(spawner.mushroomPrefabs[spawner.mushindex1].GetComponent<MushCategorization>().mushData) >= spawner.numgoal1;
+        goal1Met = GoalMet(spawner.mushindex1, spawner.numgoal1);
         Debug.Log("Goal 1 met: " + goal1Met);
 
-        // Goal 2
-        if (spawner.numgoal2 > 0)
-        {
-            goal2Met = returnNumberof(spawner.mushroomPrefabs[spawner.mushindex2].GetComponent<MushCategorization>().mushData) >= spawner.numgoal2;
-            Debug.Log("Goal 2 met: " + goal2Met);
-        }
-        else
-        {
-            goal2Met = true;
-        }
+        goal2Met = GoalMet(spawner.mushindex2, spawner.numgoal2);
+        Debug.Log("Goal 2 met: " + goal2Met);
 
-        // Goal 3
-        if (spawner.numgoal3 > 0)
-        {
-            goal3Met = returnNumberof(spawner.mushroomPrefabs[spawner.mushindex3].GetComponent<MushCategorization>().mushData) >= spawner.numgoal3;
-            Debug.Log("Goal 3 met: " + goal3Met);
-        }
-        else
-        {
-            goal3Met = true;
-        }
+        goal3Met = GoalMet(spawner.mushindex3, spawner.numgoal3);
+        Debug.Log("Goal 3 met: " + goal3Met);
 
         return goal1Met && goal2Met && goal3Met;
+    }
+
+    bool GoalMet(int prefabIndex, int needed)
+    {
+        if (needed <= 0)
+            return true;
+
+        string type = spawner.mushroomPrefabs[prefabIndex].GetComponent<MushCategorization>().mushData.mushroomName;
+        return returnNumberofType(type) >= needed;
     }
 }

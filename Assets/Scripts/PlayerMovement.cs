@@ -114,7 +114,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.CompareTag("mushroom"))
         {
             Debug.Log("hello enter premise");
-            currentmush = other.gameObject;
+            currentmush = WholeMushroom(other.transform);
             Debug.Log("Stored mushroom: " + currentmush.name);
             button.SetActive(true);
         }
@@ -156,6 +156,19 @@ public class PlayerMovement : MonoBehaviour
             Destroy(currentmush);
             currentmush = null;
         }
+    }
+
+    // some mushroom prefabs (BadBellCap) also tag and trigger on child parts like the warts,
+    // so climb to the topmost object that is still part of the mushroom
+    GameObject WholeMushroom(Transform part)
+    {
+        Transform whole = part;
+        for (Transform t = part.parent; t != null; t = t.parent)
+        {
+            if (t.GetComponent<MushCategorization>() != null)
+                whole = t;
+        }
+        return whole.gameObject;
     }
 
     public void OnTriggerExit(Collider other)

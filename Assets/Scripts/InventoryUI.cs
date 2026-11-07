@@ -9,21 +9,25 @@ public class InventoryUI : MonoBehaviour
     public GameObject itemPrefab;     
     public Transform Grid;   
 
-    public Dictionary<MushroomScriptable, GameObject> UITracker = new Dictionary<MushroomScriptable, GameObject>();
+    // one slot per mushroom type, so safe and poisonous of the same type share it
+    public Dictionary<string, GameObject> UITracker = new Dictionary<string, GameObject>();
 
     public void RefreshUI()
     {
         foreach (var item in playerInventory.items)
         {
-            UpdateItemUI(item.data, item.numberof);
+            UpdateItemUI(item.data);
         }
     }
 
-    private void UpdateItemUI(MushroomScriptable mush, int quantity)
+    private void UpdateItemUI(MushroomScriptable mush)
     {
-        if (UITracker.ContainsKey(mush))
+        string type = mush.mushroomName;
+        int quantity = playerInventory.returnNumberofType(type);
+
+        if (UITracker.ContainsKey(type))
         {
-            TextMeshProUGUI quantityText = UITracker[mush].transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI quantityText = UITracker[type].transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             quantityText.text = "x" + quantity;
         }
         else
@@ -34,9 +38,9 @@ public class InventoryUI : MonoBehaviour
             icon.sprite = mush.icon;
 
             TextMeshProUGUI quantityText = go.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-            quantityText.text = "x" + playerInventory.returnNumberof(mush);
+            quantityText.text = "x" + quantity;
 
-            UITracker[mush] = go;
+            UITracker[type] = go;
         }
     }
 
