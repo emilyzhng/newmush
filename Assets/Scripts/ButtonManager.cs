@@ -92,6 +92,14 @@ public class ButtonManager : MonoBehaviour
         StartCoroutine(ShowObjective());
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && SubmitButton.activeSelf)
+        {
+            ClickSubmit();
+        }
+    }
+
     void SpawnPlayer(Vector3 spawn)
     {
         // some house spots are below the terrain surface, which can drop the player through the map,

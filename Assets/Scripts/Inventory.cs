@@ -27,11 +27,12 @@ public class Inventory : MonoBehaviour
     public static bool goal2Met = false;
     public static bool goal3Met = false;
 
+    // safe and poisonous mushrooms share a name, so match on the asset itself
     public void addItem(MushroomScriptable mush)
     {
         foreach (InventoryItem item in items)
         {
-            if (item.data.mushroomName == mush.mushroomName)
+            if (item.data == mush)
             {
                 item.numberof++;
                 return;
@@ -46,7 +47,7 @@ public class Inventory : MonoBehaviour
     {
         foreach (InventoryItem item in items)
         {
-            if (item.data.mushroomName == mush.mushroomName)
+            if (item.data == mush)
             {
                 return item.numberof;
             }

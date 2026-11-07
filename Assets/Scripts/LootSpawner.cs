@@ -13,6 +13,9 @@ public class LootSpawner : MonoBehaviour
     public int mushindex3;
     public int numgoal3;
 
+    // every poisonous type that can appear today gets at least this many spawns
+    public int minPoisonPerType = 2;
+
     private List<Transform> availableSpawns;
 
     void Start()
@@ -22,7 +25,10 @@ public class LootSpawner : MonoBehaviour
 
         FilterSpawnPoints();
 
+        // goal mushrooms take spawn points first so the objective can always be met,
+        // then the guaranteed poisonous ones, then random fill
         GoalSpawn();
+        PoisonSpawn();
         SpawnMushroom();
     }
 
@@ -46,13 +52,14 @@ public class LootSpawner : MonoBehaviour
         }
         else if (ButtonManager.Day == 3)
         {
+            mushindex1 = 2;
+            numgoal1 = 2;
+
             mushindex2 = 4;
             numgoal2 = 2;
-            mushindex2 = 2;
-            numgoal2 = 2;
-            mushindex2 = 6;
-            numgoal2 = 3;
 
+            mushindex3 = 6;
+            numgoal3 = 3;
         }
     }
 
@@ -73,27 +80,20 @@ public class LootSpawner : MonoBehaviour
 
     public void GoalSpawn()
     {
-        // Goal Mushroom 1
-        for (int i = 0; i < numgoal1 && availableSpawns.Count > 0; i++)
+        SpawnAtRandomPoints(mushindex1, numgoal1);
+        SpawnAtRandomPoints(mushindex2, numgoal2);
+        SpawnAtRandomPoints(mushindex3, numgoal3);
+    }
+
+    // places count of one prefab on random unused spawn points
+    void SpawnAtRandomPoints(int prefabIndex, int count)
+    {
+        for (int i = 0; i < count && availableSpawns.Count > 0; i++)
         {
             int randomSpawn = Random.Range(0, availableSpawns.Count);
 
             Instantiate(
-                mushroomPrefabs[mushindex1],
-                availableSpawns[randomSpawn].position,
-                Quaternion.identity
-            );
-
-            availableSpawns.RemoveAt(randomSpawn);
-        }
-
-        // Goal Mushroom 2
-        for (int i = 0; i < numgoal2 && availableSpawns.Count > 0; i++)
-        {
-            int randomSpawn = Random.Range(0, availableSpawns.Count);
-
-            Instantiate(
-                mushroomPrefabs[mushindex2],
+                mushroomPrefabs[prefabIndex],
                 availableSpawns[randomSpawn].position,
                 Quaternion.identity
             );
@@ -102,26 +102,48 @@ public class LootSpawner : MonoBehaviour
         }
     }
 
-    public void SpawnMushroom()
-{
-    foreach (Transform spawnPoint in availableSpawns)
+    // prefab index range (min inclusive, max exclusive) that can spawn today
+    void DayMushroomRange(out int min, out int max)
     {
-        int randomMushroomIndex;
-
         if (ButtonManager.Day == 1)
         {
-            // Only mushrooms 0 and 1
-            randomMushroomIndex = Random.Range(0, 4);
+            // Bellcap and Coral
+            min = 0;
+            max = 4;
         }
         else if (ButtonManager.Day == 2)
         {
-            // Mushrooms 0,1,2
-            randomMushroomIndex = Random.Range(2, 6);
+            // Coral and Lantern
+            min = 2;
+            max = 6;
         }
         else
         {
-            randomMushroomIndex = Random.Range(2, mushroomPrefabs.Length);
+            min = 2;
+            max = mushroomPrefabs.Length;
         }
+    }
+
+    public void PoisonSpawn()
+    {
+        DayMushroomRange(out int min, out int max);
+
+        for (int index = min; index < max; index++)
+        {
+            if (!mushroomPrefabs[index].GetComponent<MushCategorization>().mushData.isPoisonous)
+                continue;
+
+            SpawnAtRandomPoints(index, minPoisonPerType);
+        }
+    }
+
+    public void SpawnMushroom()
+{
+    DayMushroomRange(out int min, out int max);
+
+    foreach (Transform spawnPoint in availableSpawns)
+    {
+        int randomMushroomIndex = Random.Range(min, max);
 
         Instantiate(
             mushroomPrefabs[randomMushroomIndex],

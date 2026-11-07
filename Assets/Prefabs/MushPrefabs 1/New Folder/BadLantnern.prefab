@@ -51,7 +51,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 9ec6c7766c779a345880474dd8ede8e2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 6aa1c64598e3634409d6ef35a0ec8a15, type: 2}
+      objectReference: {fileID: 2100000, guid: ca5d13c5a8e0438489b67f69bb9e3026, type: 2}
     - target: {fileID: 919132149155446097, guid: 9ec6c7766c779a345880474dd8ede8e2, type: 3}
       propertyPath: m_Name
       value: BadLantnern
